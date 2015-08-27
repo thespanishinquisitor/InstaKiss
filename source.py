@@ -17,22 +17,20 @@ import execjs
 
 class Anime:
     def __init__(self, name, home):
-        self.name = name #Display name
-        self.epdict = {'Baka':0}
+        self.name = name
+        self.epdict = {}
         self.home = home
         self.current = 0
 def writedict(adict):
     listfile = open(r'animelist.txt', 'wb')
     pickle.dump(adict, listfile)
     listfile.close()
-
-
-
+    
 root = tk.Tk()
 root.geometry("419x220")
 root.title("InstaKiss!")
 root.wm_iconbitmap('lips.ico')
-#root.resizable(height = False, width = False)
+root.resizable(height = False, width = False)
 
 note = ttk.Notebook(root)
 homeframe = tk.Frame(note, padx = 2,bg = 'white')
