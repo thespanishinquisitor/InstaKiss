@@ -18,13 +18,13 @@ Now, a bit about how to use the program. To execute the program, find the "Insta
 
 A. "My Shows" -- The bread and butter of InstaKiss. Here you can view a list of the shows your watching. This tab has four                 buttons:
 
-	1. "Continue" -- Continue the show where you left off by going to the next episode.
+   1. "Continue" -- Continue the show where you left off by going to the next episode.
   
-	2. "Watch selected episode" -- Watch the specific episode selected.
+   2. "Watch selected episode" -- Watch the specific episode selected.
 
-	3. "Set as previous episode" -- Set the selected show as the last episode you watched. This allows the "Continue" button to                                take you to the next episode. 
+   3. "Set as previous episode" -- Set the selected show as the last episode you watched. This allows the "Continue" button 					to take you to the next episode. 
 
-  4. "Back up List" -- Back up the current list in case of a file corruption, an accidental deletion, or an accidental reset.                    The file will be saved to the ...\InstaKiss\BackupLists. You may name the file if you wish. If not, the                      default file name for the list will be your current data and time. To use the backuplist, copy it into the                    main directory and rename the textfile to "animelist", overriding the original file. Restart the program.
+   4. "Back up List" -- Back up the current list in case of a file corruption, an accidental deletion, or an accidental       		     reset. The file will be saved to the ...\InstaKiss\BackupLists. You may name the file if you wish. If not, 			     the default file name for the list will be your current data and time. To use the backuplist, copy 		     it into the main directory and rename the textfile to "animelist", overriding the original file. Restart 		     the program.
 
 B. "Add Show" -- Allows you to add your favorite shows to the list. First enter the name of the show. This will the name you               see in the list on the "My Shows" tab. For optimal performance, please stick to alphanumerical ASCII characters               and not special ones, e.g. ☻, ♦, ◘, ♥, etc. Then you'll need to paste (with the CTRL + V) the full link to the               shows main page from one of the three supported Kiss sites, e.g. http://kissasian.com/Drama/Amachan. Click the               button and you should see that your show has been added.
 
