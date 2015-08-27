@@ -9,23 +9,22 @@ import execjs
 import PyV8
 import cfscrape
 from bs4 import BeautifulSoup as bs
-import datetime
 import time
-import requests
-from requests.adapters import HTTPAdapter
-import execjs
+
 
 class Anime:
     def __init__(self, name, home):
         self.name = name
-        self.epdict = {}
+        self.epdict = {'Baka':0}
         self.home = home
         self.current = 0
 def writedict(adict):
     listfile = open(r'animelist.txt', 'wb')
     pickle.dump(adict, listfile)
     listfile.close()
-    
+
+
+
 root = tk.Tk()
 root.geometry("419x220")
 root.title("InstaKiss!")
@@ -111,7 +110,7 @@ def updatelist():
     unpicklefile.close()
     for name in sorted(allanime):
         animelist.insert(tk.END, name)
-updatelist()
+
 #----------------------Anime Selection GUI Programming--------------------------
 urlbits = [None, None]
 
@@ -126,7 +125,10 @@ def getanime(event):
     episodecombo['values'] = urlbits[0].epdict.keys()
     episodecombo.update()
 def getepisode(event):
-    urlbits[1] = urlbits[0].epdict[episodecombo.get()] #episode
+    try:
+        urlbits[1] = urlbits[0].epdict[episodecombo.get()] #episode
+    except AttributeError:
+        pass
 
 def setlast():
     allanime[animelist.get(animelist.curselection())].current = episodecombo.current()
@@ -159,15 +161,40 @@ contbutton.configure(command = continueanime)
 
 #----------------------------Add Anime to Program-------------------------------
 def create_epdict(ep_dict, url):
-    scraper = cfscrape.create_scraper()
-    content =  scraper.get(url).content
-    soup = bs(content)
-    epdict = {}
-    eplist = []
-    titlelist = []
-    if "Drama" in url:
-        for link in soup.find_all('a'):
-                if 'href' in str(link):
+    try:
+        scraper = cfscrape.create_scraper()
+        content =  scraper.get(url).content
+        soup = bs(content)
+        epdict = {}
+        eplist = []
+        titlelist = []
+        if "Drama" in url:
+            for link in soup.find_all('a'):
+                    if 'href' in str(link):
+                        try:
+                            if "Episode-" in link['href']:
+                                possible = link['href'].split("Episode-")[1]
+                                possible = "/Episode-" + possible
+                                fullurl = url + possible
+                                fulltitle = link['title'].split("Episode ")[1][:9]
+                                integers = [str(i) for i in range(0,10)]
+                                if possible:
+                                    episode = possible[:7]
+                                if fulltitle[0] in integers and fulltitle[1] in integers and fulltitle[2] in integers:
+                                    title = fulltitle[:3]
+                                elif fulltitle[0] in integers and fulltitle[1] in integers:
+                                    title = fulltitle[:2]
+                                else:
+                                    title = fulltitle[0]
+                                eplist.append(fullurl.encode('ascii'))
+                                titlelist.append(title.encode('ascii'))
+
+                        except TypeError:
+                            pass
+            epdict = od((zip(titlelist[::-1][0:], eplist[::-1][0:])))
+            return epdict
+        else:
+            for link in soup.find_all('a'):
                     try:
                         if "Episode-" in link['href']:
                             possible = link['href'].split("Episode-")[1]
@@ -175,67 +202,40 @@ def create_epdict(ep_dict, url):
                             fullurl = url + possible
                             fulltitle = link['title'].split("Episode ")[1][:9]
                             integers = [str(i) for i in range(0,10)]
-                            if possible:
-                                episode = possible[:7]
-                            if fulltitle[0] in integers and fulltitle[1] in integers and fulltitle[2] in integers:
-                                title = fulltitle[:3]
-                            elif fulltitle[0] in integers and fulltitle[1] in integers:
-                                title = fulltitle[:2]
+                            if fulltitle[4] in integers and fulltitle[5] in integers and fulltitle[6] in integers:
+                                title = fulltitle[:7]
+                            elif fulltitle[3:6] == " - " and fulltitle[6::9] in integers and fulltitle[7::9] in integers and fulltitle[8::9] in integers:
+                                title = fulltitle[:9]
+                            elif 'v' in fulltitle[:4].lower():
+                                title = fulltitle[0:5]
                             else:
-                                title = fulltitle[0]
+                                title = fulltitle[:3]
                             eplist.append(fullurl.encode('ascii'))
                             titlelist.append(title.encode('ascii'))
-
                     except TypeError:
                         pass
-        epdict = od((zip(titlelist[::-1][0:], eplist[::-1][0:])))
-        return epdict
-    else:
-        for link in soup.find_all('a'):
-                try:
-                    if "Episode-" in link['href']:
-                        possible = link['href'].split("Episode-")[1]
-                        possible = "/Episode-" + possible
-                        fullurl = url + possible
-                        fulltitle = link['title'].split("Episode ")[1][:9]
-                        integers = [str(i) for i in range(0,10)]
-                        if fulltitle[4] in integers and fulltitle[5] in integers and fulltitle[6] in integers:
-                            title = fulltitle[:7]
-                        elif fulltitle[3:6] == " - " and fulltitle[6::9] in integers and fulltitle[7::9] in integers and fulltitle[8::9] in integers:
-                            title = fulltitle[:9]
-                        elif 'v' in fulltitle[:4].lower():
-                            title = fulltitle[0:5]
-                        else:
-                            title = fulltitle[:3]
-                        eplist.append(fullurl.encode('ascii'))
-                        titlelist.append(title.encode('ascii'))
-                except TypeError:
-                    pass
-        epdict = od((zip(sorted(titlelist),sorted(eplist))))
-        return epdict
+            epdict = od((zip(sorted(titlelist),sorted(eplist))))
+            return epdict
+    except:
+        pass
 
 def create_anime():
     epdict = {}
     url = urlentry.get()
     name = nameentry.get()
-    anime = Anime(name, url)
-    anime.epdict = create_epdict(epdict, url)
-    allanime['%s' %name] = anime
-    writedict(allanime)
-    animelist.delete(0, tk.END)
-    updatelist()
-
-def create_manga():
-    epdict = {}
-    url = urlentry.get()
-    name = nameentry.get()
-    manga = Anime(name, url)
-    manga.epdict = create_epdictm(epdict, url)
-    allmanga['%s' %name] = manga
-    writemdict(allmanga)
-    mangalist.delete(0, tk.END)
-    updatemlist()
-
+    if "http://kisscartoon.me/" in url or "http://kissanime.com/" in url or "http://kissasian.com/" in url:
+        anime = Anime(name, url)
+        anime.epdict = create_epdict(epdict, url)
+        allanime['%s' %name] = anime
+        writedict(allanime)
+        animelist.delete(0, tk.END)
+        urlentry.delete(0, 'end')
+        nameentry.delete(0, 'end')
+        updatelist()
+    else:
+        nameentry.delete(0, 'end')
+        urlentry.delete(0, 'end')
+        urlentry.insert(0, "I couldn't add your show. Was that valid link?")
 
 def resetlist():
     allanimeo = {}
@@ -250,6 +250,8 @@ def resetlist():
         animelist.delete(0, tk.END)
         updatelist()
 
+updatelist()
+#resetlist()
 addbutton['command'] = create_anime
 #--------------------------Remove Anime from Program----------------------------
 def delanime():
@@ -257,13 +259,17 @@ def delanime():
     unpicklefile = open(r'animelist.txt', 'rb')
     anilist = pickle.load(unpicklefile)
     unpicklefile.close()
-    unpicklefile = open(r'animelist.txt', 'wb')
-    del anilist['%s' %name]
-    writedict(anilist)
-    unpicklefile.close()
-    animelist.delete(0, tk.END)
-    updatelist()
-
+    if name in anilist:
+        unpicklefile = open(r'animelist.txt', 'wb')
+        del anilist['%s' %name]
+        writedict(anilist)
+        unpicklefile.close()
+        animelist.delete(0, tk.END)
+        nameentry2.delete(0, 'end')
+        updatelist()
+    else:
+        nameentry2.delete(0, 'end')
+        nameentry2.insert(0, "I couldn't remove that show. Is it in your list?")
 
 
 def resetdefault():
@@ -282,8 +288,8 @@ def resetdefault():
         t.destroy()
     t = tk.Toplevel(bg = 'white')
     sure = tk.Label(t, text = "Are you sure?", bg = "white", height = 2, width = 20)
-    y = tk.Button(t, text = "Yes, reset my show list.", command = resetlist2, bg = 'pink')
-    n = tk.Button(t, text = "No, I want to keep my list.", command = t.destroy, bg = 'lightcyan')
+    y = tk.Button(t, text = "Yes, reset my show list.", command = resetlist2, bg = 'rosybrown2')
+    n = tk.Button(t, text = "No, I want to keep my list.", command = t.destroy, bg = 'DarkOliveGreen2')
     sure.grid(row = 0, padx = 5, pady = (5,0))
     y.grid(row = 1, pady = (5,0))
     n.grid(row = 2, pady = (5,5))
@@ -309,7 +315,7 @@ def backupbuttonfunc():
             backupfile.close()
             bup.destroy()
         popup = tk.Toplevel(bg = 'white')
-        tk.Label(popup, text = "Backup successful!", bg = 'white', height = 3).pack()
+        tk.Label(popup, text = "Backup successful! \n\n*\\(^O^)/*", bg = 'white', height = 4).pack()
      bupf = tk.Frame(bup, bg = 'white')
      bupf.pack()
      backlabel = tk.Label(bupf, text = "Name the backup file:", bg = 'white')
